@@ -58,6 +58,32 @@ def format_used_tools(recipe: dict) -> list[str]:
     return used
 
 
+def get_ingredients(recipe_id: int) -> list[str]:
+    """Возвращает список ингредиентов рецепта по порядку."""
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT text FROM recipe_ingredients WHERE recipe_id = ? ORDER BY sort_order",
+        (recipe_id,),
+    )
+    rows = cur.fetchall()
+    conn.close()
+    return [r[0] for r in rows]
+
+
+def get_steps(recipe_id: int) -> list[str]:
+    """Возвращает пошаговые инструкции рецепта по порядку."""
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute(
+        "SELECT step_text FROM recipe_steps WHERE recipe_id = ? ORDER BY step_order",
+        (recipe_id,),
+    )
+    rows = cur.fetchall()
+    conn.close()
+    return [r[0] for r in rows]
+
+
 def main():
     init_db()
 
@@ -84,16 +110,31 @@ def main():
         if recipe is None:
             st.warning("Нет подходящего рецепта.")
         else:
-            st.success(f"**{recipe['name']}**")
-            st.write(f"⏱ Время: {recipe['cook_time']} мин")
+            recipe_id = recipe["id"]
+            ingredients = get_ingredients(recipe_id)
+            steps = get_steps(recipe_id)
             tools = format_used_tools(recipe)
+
+            st.success(f"**{recipe['name']}**")
+            st.write(f"⏱ **Время приготовления:** {recipe['cook_time']} мин")
             if tools:
-                st.write("🛠 Инструменты:", ", ".join(tools))
+                st.write("🛠 **Используемые инструменты:** ", ", ".join(tools))
+
             st.divider()
-            st.subheader("Как приготовить")
-            st.write("Step 1: Подготовьте продукты.")
-            st.write("Step 2: Следуйте классическому способу приготовления блюда.")
-            st.write("Step 3: Подавайте к столу.")
+            st.subheader("📋 Ингредиенты")
+            if ingredients:
+                for ing in ingredients:
+                    st.write(f"- {ing}")
+            else:
+                st.caption("Ингредиенты не указаны.")
+
+            st.divider()
+            st.subheader("👨‍🍳 Пошаговые инструкции")
+            if steps:
+                for i, step in enumerate(steps, start=1):
+                    st.write(f"**{i}.** {step}")
+            else:
+                st.caption("Инструкции не указаны.")
 
 
 if __name__ == "__main__":
