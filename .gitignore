@@ -1,3 +1,6 @@
+# Database (создаётся через init_db.py)
+eatwise/recipes.db
+
 # Python
 __pycache__/
 *.py[cod]
