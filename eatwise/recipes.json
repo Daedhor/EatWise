@@ -1,7 +1,7 @@
 [
   {
     "name": "Картофельная запеканка с фаршем",
-    "meal_type": ["lunch", "dinner"],
+    "meal_type": "dinner",
     "cook_time": 60,
     "needs_pan": true,
     "needs_oven": true,
